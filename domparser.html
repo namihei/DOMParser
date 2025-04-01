@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>外部コンテンツ取得サンプル</title>
+</head>
+<body>
+  <div id="displayArea">読み込み中...</div>
+
+  <script>
+    // URLSearchParamsを使用してURLパラメータを取得
+    const params = new URLSearchParams(window.location.search);
+    const targetUrl = params.get('url');
+    const targetId = params.get('id');
+
+    // 必要なパラメータが指定されているか確認
+    if (!targetUrl || !targetId) {
+      document.getElementById('displayArea').textContent =
+        'エラー: URLとIDのパラメータが必要です。例: ?url=https://example.com/page.html&id=targetElement';
+    } else {
+      // 指定されたURLからHTMLを取得
+      fetch(targetUrl)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('ネットワークエラー: ' + response.status);
+          }
+          return response.text();
+        })
+        .then(htmlString => {
+          // DOMParserでHTML文字列をパース
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(htmlString, 'text/html');
+
+          // 指定されたIDの要素を抽出
+          const targetContent = doc.querySelector('#' + targetId);
+          if (targetContent) {
+            document.getElementById('displayArea').innerHTML = targetContent.innerHTML;
+          } else {
+            document.getElementById('displayArea').textContent =
+              '指定したIDの要素が見つかりませんでした。';
+          }
+        })
+        .catch(error => {
+          console.error('エラーが発生しました:', error);
+          document.getElementById('displayArea').textContent =
+            'コンテンツの取得に失敗しました。';
+        });
+    }
+  </script>
+</body>
+</html>
